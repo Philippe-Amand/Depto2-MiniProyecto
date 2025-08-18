@@ -1,7 +1,7 @@
 import { Routes, Route, Link } from 'react-router-dom';
 import { AppBar, Toolbar, Typography, Button, Box } from '@mui/material';
-import { useContext } from 'react';
-import AuthContext from './context/AuthContext';
+import { useAuth } from './context/hooks';
+import IdleTimer from './components/IdleTimer';
 
 // Importar las páginas
 import HomePage from './pages/HomePage';
@@ -9,9 +9,10 @@ import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 
 function App() {
-  const { user, logoutUser } = useContext(AuthContext); 
+  const { user, logoutUser } = useAuth();
   return (
     <>
+    {user && <IdleTimer />}
       <AppBar position="static">
         <Toolbar>
           <Typography variant="h6" component={Link} to="/" sx={{ flexGrow: 1, color: 'inherit', textDecoration: 'none' }}>

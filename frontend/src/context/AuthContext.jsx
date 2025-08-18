@@ -1,10 +1,9 @@
-import { createContext, useState } from 'react'; // <-- Asegúrate de importar useContext
+import { createContext, useState } from 'react';
 import { jwtDecode } from 'jwt-decode';
 import { useNavigate } from 'react-router-dom';
 
-// 1. Crea y exporta el contexto. Esta será la única exportación que no es un componente.
 const AuthContext = createContext();
-export default AuthContext; // <-- Hacemos esta la exportación por defecto
+export default AuthContext;// <-- Hacemos esta la exportación por defecto
 
 // 2. Exporta el componente Provider como una exportación nombrada.
 export const AuthProvider = ({ children }) => {
@@ -56,6 +55,7 @@ export const AuthProvider = ({ children }) => {
     loginUser: loginUser,
     logoutUser: logoutUser,
   };
+  
 
   return (
     <AuthContext.Provider value={contextData}>
@@ -63,3 +63,7 @@ export const AuthProvider = ({ children }) => {
     </AuthContext.Provider>
   );
 };
+
+
+
+
