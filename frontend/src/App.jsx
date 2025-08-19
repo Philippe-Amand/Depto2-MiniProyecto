@@ -7,6 +7,7 @@ import IdleTimer from './components/IdleTimer';
 import HomePage from './pages/HomePage';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
+import PropertyDetailPage from './pages/PropertyDetailPage';
 
 function App() {
   const { user, logoutUser } = useAuth();
@@ -43,6 +44,7 @@ function App() {
           <Route path="/" element={<HomePage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
+          <Route path="/property/:propertyId" element={<PropertyDetailPage />} />
         </Routes>
       </main>
     </>
