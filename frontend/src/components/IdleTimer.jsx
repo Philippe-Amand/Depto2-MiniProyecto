@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react';
-import { useAuth } from '../context/AuthContext'; // Volvemos a usar nuestro hook personalizado
+import { useAuth } from '../context/hooks';
 
 function IdleTimer() {
   const { logoutUser } = useAuth();
