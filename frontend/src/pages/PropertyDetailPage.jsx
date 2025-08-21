@@ -1,27 +1,33 @@
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { API_BASE_URL } from '../apiConfig';
-import { Container, Typography, CircularProgress, Alert } from '@mui/material';
+import { API_DOMAIN, API_BASE_URL } from '../apiConfig';
+import { 
+  Container, 
+  Typography, 
+  CircularProgress, 
+  Alert, 
+  Box, 
+  Paper, 
+  Grid 
+} from '@mui/material';
+import ReactPlayer from 'react-player';
+import MapComponent from '../components/MapComponent';
 
 function PropertyDetailPage() {
-  // 1. Obtiene el ID de la propiedad desde la URL
   const { propertyId } = useParams();
-  
-  // 2. Estados para manejar los datos, carga y errores
   const [property, setProperty] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [isClient, setIsClient] = useState(false);
 
-  // 3. Efecto para buscar los datos de ESTA propiedad cuando el componente se carga
   useEffect(() => {
+    setIsClient(true);
     const fetchPropertyDetails = async () => {
       try {
         setLoading(true);
         setError(null);
         const response = await fetch(`${API_BASE_URL}/properties/${propertyId}/`);
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
+        if (!response.ok) throw new Error(`Propiedad no encontrada`);
         const data = await response.json();
         setProperty(data);
       } catch (e) {
@@ -30,25 +36,74 @@ function PropertyDetailPage() {
         setLoading(false);
       }
     };
-
     fetchPropertyDetails();
-  }, [propertyId]); // Se ejecuta cada vez que el propertyId cambia
+  }, [propertyId]);
 
-  if (loading) return <CircularProgress />;
-  if (error) return <Alert severity="error">Error: {error}</Alert>;
-  if (!property) return <Typography>Propiedad no encontrada.</Typography>;
+  if (loading) return <Box display="flex" justifyContent="center" sx={{ p: 4 }}><CircularProgress /></Box>;
+  if (error) return <Container sx={{ p: 4 }}><Alert severity="error">{error}</Alert></Container>;
+  if (!property) return <Container sx={{ p: 4 }}><Typography>Propiedad no encontrada.</Typography></Container>;
+  
+  const propertyImageUrl = property.image ? `${API_DOMAIN}${property.image}` : null;
 
-  // 4. Renderiza los detalles de la propiedad
   return (
-    <Container>
-      <Typography variant="h2" component="h1" gutterBottom>
-        {property.name}
-      </Typography>
-      <Typography variant="h5" color="text.secondary">
-        {property.address}
-      </Typography>
-      <p>{property.description}</p>
-      {/* Aquí añadiremos el mapa y el video/imagen más adelante */}
+    <Container sx={{ py: 4 }}>
+      
+      {/* 1. BLOQUE DE INFORMACIÓN (RESTAURADO) */}
+      <Paper sx={{ p: 3, mb: 4 }}>
+        <Typography variant="h3" component="h1" gutterBottom>{property.name}</Typography>
+        <Typography variant="h5" color="text.secondary">{property.address}</Typography>
+        <Typography variant="body1" sx={{ my: 2 }}>{property.description}</Typography>
+        <Typography variant="h4" sx={{ my: 2 }}>
+          Precio: ${Number(property.price).toLocaleString()}
+        </Typography>
+      </Paper>
+
+      {/* 2. BLOQUE MULTIMEDIA */}
+      <Box sx={{ mb: 4 }}> {/* Margen inferior para separar del mapa */}
+        <Grid container spacing={4}>
+          <Grid item xs={12} md={6}>
+            <Typography variant="h4" component="h2" gutterBottom>Video</Typography>
+            <Paper sx={{ p: 2, height: '100%' }}>
+              {isClient && property.youtube_video_url ? (
+                <Box sx={{ position: 'relative', paddingTop: '56.25%' }}>
+                  <ReactPlayer 
+                    url={property.youtube_video_url}
+                    width="100%" height="100%"
+                    style={{ position: 'absolute', top: 0, left: 0 }}
+                    controls={true} light={true}
+                  />
+                </Box>
+              ) : (
+                <Typography color="text.secondary">(No hay video disponible)</Typography>
+              )}
+            </Paper>
+          </Grid>
+          <Grid item xs={12} md={6}>
+            <Typography variant="h4" component="h2" gutterBottom>Imagen</Typography>
+            <Paper sx={{ p: 2, height: '100%' }}>
+              {propertyImageUrl ? (
+                <Box 
+                  component="img"
+                  src={propertyImageUrl}
+                  alt={`Imagen de ${property.name}`}
+                  sx={{ width: '100%', height: 'auto', borderRadius: 1 }}
+                />
+              ) : (
+                <Typography color="text.secondary">(No hay imagen disponible)</Typography>
+              )}
+            </Paper>
+          </Grid>
+        </Grid>
+      </Box>
+
+      {/* 3. BLOQUE DE MAPA */}
+      <Box>
+        <Typography variant="h4" component="h2" gutterBottom>Ubicación</Typography>
+        <Paper sx={{ height: '500px', width: '100%' }}>
+          <MapComponent properties={[property]} />
+        </Paper>
+      </Box>
+
     </Container>
   );
 }

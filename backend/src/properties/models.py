@@ -37,6 +37,18 @@ class Property(models.Model):
         null=True,
         blank=True
     )
+    youtube_video_url = models.URLField(
+        max_length=255, 
+        null=True, 
+        blank=True, 
+        verbose_name="URL del Video de YouTube"
+    )
+    image = models.ImageField(
+        upload_to='properties/',
+        null=True,
+        blank=True,
+        verbose_name="Imagen de la Propiedad"
+    )
     created_at = models.DateTimeField(
         auto_now_add=True,
         verbose_name="Fecha de Creación"

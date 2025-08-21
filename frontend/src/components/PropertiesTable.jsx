@@ -1,6 +1,4 @@
-import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { API_BASE_URL } from '../apiConfig';
 import { 
   Table, 
   TableBody, 
@@ -10,76 +8,47 @@ import {
   TableRow, 
   Paper, 
   IconButton,
-  TablePagination,
-  CircularProgress,
-  Alert,
-  Box
+  TablePagination
 } from '@mui/material';
 import HomeIcon from '@mui/icons-material/Home';
 
-function PropertiesTable() {
-  const [properties, setProperties] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [page, setPage] = useState(0);
-  const [rowsPerPage, setRowsPerPage] = useState(10);
+function PropertiesTable({ 
+  properties, 
+  paginatedProperties, 
+  page, 
+  rowsPerPage, 
+  onPageChange, 
+  onRowsPerPageChange 
+}) {
   const navigate = useNavigate();
-
-  useEffect(() => {
-    const fetchProperties = async () => {
-      try {
-        setLoading(true);
-        const response = await fetch(`${API_BASE_URL}/properties/`);
-        if (!response.ok) throw new Error('Error al obtener los datos');
-        const data = await response.json();
-        setProperties(data);
-      } catch (e) {
-        setError(e.message);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchProperties();
-  }, []);
-
-  const handleChangePage = (event, newPage) => {
-    setPage(newPage);
-  };
-
-  const handleChangeRowsPerPage = (event) => {
-    setRowsPerPage(parseInt(event.target.value, 10));
-    setPage(0);
-  };
   
   const handleRowClick = (id) => {
     navigate(`/property/${id}`);
   };
 
-  if (loading) return <Box display="flex" justifyContent="center"><CircularProgress /></Box>;
-  if (error) return <Alert severity="error">{error}</Alert>;
-
-  const paginatedProperties = properties.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
-
   return (
-    <Paper>
+    <Paper sx={{ width: '100%', overflow: 'hidden' }}>
       <TableContainer>
-        <Table>
+        <Table stickyHeader aria-label="properties table">
           <TableHead>
+            {/* --- CABECERA DE LA TABLA (AHORA PRESENTE) --- */}
             <TableRow>
-              <TableCell>Nombre</TableCell>
-              <TableCell>Dirección</TableCell>
-              <TableCell>Precio</TableCell>
-              <TableCell>Detalles</TableCell>
+              <TableCell sx={{ fontWeight: 'bold' }}>Nombre</TableCell>
+              <TableCell sx={{ fontWeight: 'bold' }}>Dirección</TableCell>
+              <TableCell sx={{ fontWeight: 'bold' }}>Precio</TableCell>
+              <TableCell sx={{ fontWeight: 'bold' }}>Detalles</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
+            {/* --- CUERPO DE LA TABLA (AHORA PRESENTE) --- */}
             {paginatedProperties.map((property) => (
-              <TableRow key={property.id}>
+              <TableRow hover role="checkbox" tabIndex={-1} key={property.id}>
                 <TableCell>{property.name}</TableCell>
                 <TableCell>{property.address}</TableCell>
                 <TableCell>${Number(property.price).toLocaleString()}</TableCell>
                 <TableCell>
-                  <IconButton onClick={() => handleRowClick(property.id)}>
+                  {/* --- AQUÍ ESTÁ EL IconButton --- */}
+                  <IconButton onClick={() => handleRowClick(property.id)} aria-label="view details">
                     <HomeIcon />
                   </IconButton>
                 </TableCell>
@@ -94,8 +63,8 @@ function PropertiesTable() {
         count={properties.length}
         rowsPerPage={rowsPerPage}
         page={page}
-        onPageChange={handleChangePage}
-        onRowsPerPageChange={handleChangeRowsPerPage}
+        onPageChange={onPageChange}
+        onRowsPerPageChange={onRowsPerPageChange}
       />
     </Paper>
   );
