@@ -58,10 +58,26 @@ class Property(models.Model):
         verbose_name="Fecha de Actualización"
     )
 
-    class Meta:
-        verbose_name = "Propiedad"
-        verbose_name_plural = "Propiedades"
-        ordering = ['-created_at']
+class Meta:
+    verbose_name = "Propiedad"
+    verbose_name_plural = "Propiedades"
+    ordering = ['-created_at']
+
+def __str__(self):
+    return f"{self.name} - {self.address}"
+
+class Document(models.Model):
+    property = models.ForeignKey(
+        Property, 
+        related_name='documents', # Nos permite acceder a los documentos desde una propiedad
+        on_delete=models.CASCADE   # Si se borra la propiedad, se borran sus documentos
+    )
+    file = models.FileField(
+        upload_to='documents/',     # Se guardarán en 'media_root/documents/'
+        verbose_name="Documento"
+    )
+    uploaded_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return f"{self.name} - {self.address}"
+        return f"Documento para {self.property.name} - {self.file.name}"
+    

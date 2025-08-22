@@ -1,4 +1,4 @@
-import { Routes, Route, Link } from 'react-router-dom';
+import { Routes, Route, Link, Navigate  } from 'react-router-dom';
 import { AppBar, Toolbar, Typography, Button, Box } from '@mui/material';
 import { useAuth } from './context/hooks';
 import IdleTimer from './components/IdleTimer';
@@ -8,6 +8,7 @@ import HomePage from './pages/HomePage';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 import PropertyDetailPage from './pages/PropertyDetailPage';
+import PrivateRoute from './components/PrivateRoute';
 
 function App() {
   const { user, logoutUser } = useAuth();
@@ -41,10 +42,34 @@ function App() {
       
       <main>
         <Routes>
-          <Route path="/" element={<HomePage />} />
+          {/* --- RUTA DE LOGIN (PÚBLICA) --- */}
           <Route path="/login" element={<LoginPage />} />
+          {/* --- RUTA DE REGISTRO (PÚBLICA) --- */}
           <Route path="/register" element={<RegisterPage />} />
-          <Route path="/property/:propertyId" element={<PropertyDetailPage />} />
+          
+          {/* --- RUTA PRINCIPAL (AHORA PROTEGIDA) --- */}
+          <Route 
+            path="/" 
+            element={
+              <PrivateRoute>
+                <HomePage />
+              </PrivateRoute>
+            } 
+          />
+          
+          {/* --- RUTA DE DETALLE (AHORA PROTEGIDA) --- */}
+          <Route 
+            path="/property/:propertyId" 
+            element={
+              <PrivateRoute>
+                <PropertyDetailPage />
+              </PrivateRoute>
+            } 
+          />
+
+          {/* OPCIONAL: Una ruta "catch-all" que redirige a login si no se encuentra la ruta */}
+          <Route path="*" element={<Navigate to="/login" />} />
+
         </Routes>
       </main>
     </>

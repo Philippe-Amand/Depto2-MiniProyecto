@@ -1,12 +1,15 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
-from .views import PropertyViewSet
+from rest_framework_nested import routers
+from .views import PropertyViewSet, DocumentViewSet
 
 # DefaultRouter se encarga de generar automáticamente las URLs para un ViewSet.
-router = DefaultRouter()
-router.register(r'properties', PropertyViewSet, basename='property')
+router = routers.SimpleRouter()
+router.register(r'properties', PropertyViewSet)
 
-# Las URLs de la API son ahora determinadas automáticamente por el router.
-urlpatterns = [
-    path('', include(router.urls)),
-]
+# Router anidado para los documentos
+# Esto creará URLs como /properties/{property_pk}/documents/
+properties_router = routers.NestedSimpleRouter(router, r'properties', lookup='property')
+properties_router.register(r'documents', DocumentViewSet, basename='property-documents')
+
+urlpatterns = router.urls + properties_router.urls

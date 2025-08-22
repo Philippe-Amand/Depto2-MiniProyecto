@@ -1,7 +1,11 @@
 from django.contrib import admin
-from .models import Property # Importamos nuestro modelo Property
+from .models import Property
+from .models import Property, Document
 
 # Definimos una clase de configuración para el modelo Property
+class DocumentInline(admin.TabularInline):
+    model = Document
+    extra = 1 # Muestra un campo de subida vacío por defecto
 @admin.register(Property)
 class PropertyAdmin(admin.ModelAdmin):
     """
@@ -15,7 +19,6 @@ class PropertyAdmin(admin.ModelAdmin):
 
     # Campos que tendrán filtros en la barra lateral.
     list_filter = ('created_at', 'updated_at')
+    
+    inlines = [DocumentInline]
 
-# La línea @admin.register(Property) es un atajo (decorador) que hace lo mismo que
-# la siguiente línea, que es la forma tradicional de registrarlo:
-# admin.site.register(Property, PropertyAdmin)
