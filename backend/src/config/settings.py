@@ -16,10 +16,11 @@ from datetime import timedelta
 import os
 from dotenv import load_dotenv
 
+load_dotenv()
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-load_dotenv()
+
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
@@ -27,9 +28,14 @@ load_dotenv()
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = os.getenv("SECRET_KEY")
 
+# Credenciales de Transbank cargadas desde el entorno
+WEBPAY_PLUS_COMMERCE_CODE = os.getenv('WEBPAY_PLUS_COMMERCE_CODE')
+WEBPAY_PLUS_API_KEY_SECRET = os.getenv('WEBPAY_PLUS_API_KEY_SECRET')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.getenv('DEBUG', 'False').lower() in ('true', '1', 't')
+
+FRONTEND_BASE_URL = os.getenv('FRONTEND_BASE_URL', 'http://localhost:5173')
 
 ALLOWED_HOSTS = []
 
@@ -53,6 +59,7 @@ INSTALLED_APPS = [
     # Aplicaciones Locales (nuestras)
     'properties.apps.PropertiesConfig',
     'users.apps.UsersConfig',
+    'payments.apps.PaymentsConfig',
 ]
 
 MIDDLEWARE = [

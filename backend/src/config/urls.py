@@ -18,7 +18,7 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include 
 
-from rest_framework_simplejwt.views import TokenRefreshView
+from users.views import MyTokenObtainPairView, MyTokenRefreshView
 from users.views import MyTokenObtainPairView 
 from django.conf import settings
 from django.conf.urls.static import static
@@ -30,7 +30,8 @@ urlpatterns = [
 
     # 3. Usa nuestra vista personalizada para el endpoint de login/token
     path('api/v1/token/', MyTokenObtainPairView.as_view(), name='token_obtain_pair'),
-    path('api/v1/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
+    path('api/v1/token/refresh/', MyTokenRefreshView.as_view(), name='token_refresh'),
+    path('api/v1/payments/', include('payments.urls')),
 ]
 
 if settings.DEBUG:

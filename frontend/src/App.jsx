@@ -9,6 +9,9 @@ import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 import PropertyDetailPage from './pages/PropertyDetailPage';
 import PrivateRoute from './components/PrivateRoute';
+import CheckoutPage from './pages/CheckoutPage';
+import PaymentReturnPage from './pages/PaymentReturnPage';
+import PaymentResultPage from './pages/PaymentResultPage';
 
 function App() {
   const { user, logoutUser } = useAuth();
@@ -46,6 +49,10 @@ function App() {
           <Route path="/login" element={<LoginPage />} />
           {/* --- RUTA DE REGISTRO (PÚBLICA) --- */}
           <Route path="/register" element={<RegisterPage />} />
+
+          <Route path="/checkout/:propertyId" element={<PrivateRoute><CheckoutPage /></PrivateRoute>} />
+          <Route path="/payment/return" element={<PaymentReturnPage />} />
+          <Route path="/payment/result" element={<PaymentResultPage />} />
           
           {/* --- RUTA PRINCIPAL (AHORA PROTEGIDA) --- */}
           <Route 

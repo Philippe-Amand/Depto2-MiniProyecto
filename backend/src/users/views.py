@@ -4,7 +4,7 @@ from rest_framework.permissions import AllowAny
 from django.contrib.auth.models import User
 from .serializers import RegisterSerializer
 
-from rest_framework_simplejwt.views import TokenObtainPairView
+from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 from .serializers import MyTokenObtainPairSerializer
 
 class RegisterView(generics.CreateAPIView):
@@ -14,4 +14,8 @@ class RegisterView(generics.CreateAPIView):
 
 # Crea una vista personalizada que usa nuestro serializer
 class MyTokenObtainPairView(TokenObtainPairView):
+    permission_classes = [AllowAny]
     serializer_class = MyTokenObtainPairSerializer
+
+class MyTokenRefreshView(TokenRefreshView):
+    permission_classes = [AllowAny]

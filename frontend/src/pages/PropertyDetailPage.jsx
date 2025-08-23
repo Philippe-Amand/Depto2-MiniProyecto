@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { API_DOMAIN, API_BASE_URL } from '../apiConfig';
 import { 
   Container, 
@@ -8,7 +9,8 @@ import {
   Alert, 
   Box, 
   Paper, 
-  Grid 
+  Grid, 
+  Button
 } from '@mui/material';
 import ReactPlayer from 'react-player';
 import MapComponent from '../components/MapComponent';
@@ -19,6 +21,7 @@ function PropertyDetailPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [isClient, setIsClient] = useState(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
     setIsClient(true);
@@ -55,6 +58,14 @@ function PropertyDetailPage() {
         <Typography variant="body1" sx={{ my: 2 }}>{property.description}</Typography>
         <Typography variant="h4" sx={{ my: 2 }}>
           Precio: ${Number(property.price).toLocaleString()}
+          <Button 
+            variant="contained" 
+            color="primary" 
+            sx={{ mt: 2 }} 
+            onClick={() => navigate(`/checkout/${propertyId}`)}
+          >
+            Proceder al Pago
+          </Button>
         </Typography>
       </Paper>
 
