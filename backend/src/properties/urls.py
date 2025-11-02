@@ -1,15 +1,16 @@
-from django.urls import path, include
-from rest_framework.routers import DefaultRouter
-from rest_framework_nested import routers
-from .views import PropertyViewSet, DocumentViewSet
+# backend/src/properties/urls.py
 
-# DefaultRouter se encarga de generar automáticamente las URLs para un ViewSet.
-router = routers.SimpleRouter()
-router.register(r'properties', PropertyViewSet)
+from django.urls import path
+from rest_framework.routers import SimpleRouter
 
-# Router anidado para los documentos
-# Esto creará URLs como /properties/{property_pk}/documents/
-properties_router = routers.NestedSimpleRouter(router, r'properties', lookup='property')
-properties_router.register(r'documents', DocumentViewSet, basename='property-documents')
+# ¡Importa las vistas desde SU PROPIO directorio!
+from .views import PropertyViewSet, generate_property_report 
 
-urlpatterns = router.urls + properties_router.urls
+# --- router ---
+router = SimpleRouter()
+router.register(r'', PropertyViewSet, basename='property') # Cambiado para anidar correctamente
+
+# --- urlpatterns ---
+urlpatterns = router.urls + [
+    path('<int:property_pk>/report/', generate_property_report, name='property-report'),
+]

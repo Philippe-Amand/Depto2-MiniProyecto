@@ -15,24 +15,48 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 
-from django.contrib import admin
-from django.urls import path, include 
+# from django.contrib import admin
+# from django.urls import path, include 
 
-from users.views import MyTokenObtainPairView, MyTokenRefreshView
-from users.views import MyTokenObtainPairView 
+# from users.views import MyTokenObtainPairView, MyTokenRefreshView
+# from users.views import MyTokenObtainPairView 
+# from django.conf import settings
+# from django.conf.urls.static import static
+
+# urlpatterns = [
+#     path('admin/', admin.site.urls),
+#     path('api/v1/', include('properties.urls')),
+#     path('api/v1/auth/', include('users.urls')),
+
+#     # 3. Usa nuestra vista personalizada para el endpoint de login/token
+#     path('api/v1/token/', MyTokenObtainPairView.as_view(), name='token_obtain_pair'),
+#     path('api/v1/token/refresh/', MyTokenRefreshView.as_view(), name='token_refresh'),
+#     path('api/v1/payments/', include('payments.urls')),
+# ]
+
+# if settings.DEBUG:
+#     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+# backend/src/config/urls.py
+
+from django.contrib import admin
+from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
+from users.views import MyTokenObtainPairView, MyTokenRefreshView
 
+# --- urlpatterns ---
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('api/v1/', include('properties.urls')),
-    path('api/v1/auth/', include('users.urls')),
 
-    # 3. Usa nuestra vista personalizada para el endpoint de login/token
+    # Delega todas las rutas de '/api/v1/properties/' al archivo properties.urls
+    path('api/v1/properties/', include('properties.urls')), 
+    
+    # Rutas de autenticación
+    path('api/v1/users/', include('users.urls')),
     path('api/v1/token/', MyTokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('api/v1/token/refresh/', MyTokenRefreshView.as_view(), name='token_refresh'),
-    path('api/v1/payments/', include('payments.urls')),
 ]
 
+# Servir archivos media en modo DEBUG
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

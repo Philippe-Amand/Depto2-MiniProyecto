@@ -9,9 +9,8 @@ https://docs.djangoproject.com/en/5.2/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.2/ref/settings/
 """
-
-from pathlib import Path
 from datetime import timedelta
+from pathlib import Path
 
 import os
 from dotenv import load_dotenv
@@ -19,6 +18,7 @@ from dotenv import load_dotenv
 load_dotenv()
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+REPORT_TEMPLATES_DIR = BASE_DIR / 'report_templates'
 
 
 
@@ -43,23 +43,22 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
-    # Aplicaciones de Django
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    
-    # Aplicaciones de Terceros (3rd Party)
+
+    # 3rd Party Apps
     'rest_framework',
     'rest_framework_simplejwt',
     'corsheaders',
 
-    # Aplicaciones Locales (nuestras)
-    'properties.apps.PropertiesConfig',
-    'users.apps.UsersConfig',
-    'payments.apps.PaymentsConfig',
+    # Nuestras Apps
+    'properties',
+    'users',
+    'payments',
 ]
 
 MIDDLEWARE = [
@@ -97,9 +96,16 @@ WSGI_APPLICATION = "config.wsgi.application"
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
 DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": BASE_DIR / "db.sqlite3",
+    'default': {
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': os.getenv('DB_NAME'),
+        'USER': os.getenv('DB_USER'),
+        'PASSWORD': os.getenv('DB_PASSWORD'),
+        'HOST': os.getenv('DB_HOST'),
+        'PORT': os.getenv('DB_PORT'),
+        'OPTIONS': {
+            'charset': 'utf8mb4',
+        },
     }
 }
 
@@ -170,6 +176,6 @@ REST_FRAMEWORK = {
 
 # Configuración de Simple JWT
 SIMPLE_JWT = {
-    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=60), # Aumentamos a 60 minutos
+    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=300), # Aumentamos a 60 minutos
     "REFRESH_TOKEN_LIFETIME": timedelta(days=1),
 }

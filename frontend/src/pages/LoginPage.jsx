@@ -1,8 +1,9 @@
-import { useAuth } from '../context/hooks'; 
+import { useContext } from 'react';
 import { Container, Box, TextField, Button, Typography, Alert } from '@mui/material';
+import AuthContext from '../context/AuthContext';
 
 function LoginPage() {
-  const { loginUser } = useAuth();
+  const { loginUser } = useContext(AuthContext);
 
   return (
     <Container maxWidth="xs">
