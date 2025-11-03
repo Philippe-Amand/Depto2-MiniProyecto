@@ -2,10 +2,12 @@ from io import BytesIO
 from django.http import HttpResponse
 from django.conf import settings
 from rest_framework import viewsets
+from rest_framework.pagination import PageNumberPagination as StandardResultsSetPagination
 from rest_framework.decorators import api_view, permission_classes, authentication_classes
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework_simplejwt.authentication import JWTAuthentication
 import docx
+from docxtpl import DocxTemplate
 
 from .models import Property
 from .serializers import PropertySerializer
@@ -15,7 +17,12 @@ from .serializers import PropertySerializer
 class PropertyViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Property.objects.all()
     serializer_class = PropertySerializer
-    permission_classes = [AllowAny] 
+    permission_classes = [AllowAny]
+    pagination_class = StandardResultsSetPagination
+    
+    ordering_fields = ['id'] 
+    ordering = ['id']        
+
 
 @api_view(['GET'])
 @authentication_classes([JWTAuthentication])
@@ -23,7 +30,7 @@ class PropertyViewSet(viewsets.ReadOnlyModelViewSet):
 def generate_property_report(request, property_pk=None):
     """
     Genera y devuelve un informe .docx para una propiedad específica,
-    rellenando los datos disponibles desde el modelo Property (tabla 'arriendos').
+    utilizando los campos limpios del modelo Property refactorizado.
     """
     try:
         propiedad = Property.objects.get(pk=property_pk)
@@ -32,57 +39,32 @@ def generate_property_report(request, property_pk=None):
 
     try:
         template_path = settings.BASE_DIR.parent / 'templates/reports/informe_propiedad.docx'
-        document = docx.Document(template_path)
+        doc = DocxTemplate(template_path)
         
-        # Diccionario de mapeo entre placeholders del DOCX y atributos del modelo Django
+        # --- CORRECCIÓN CLAVE: Usamos los nombres de campo del modelo limpio ---
+        # También formateamos los datos y manejamos los casos nulos.
         context = {
-            # Propiedad
-            '[dirección]': propiedad.address,
-            '[precio en UF]': propiedad.price_string,
-            '[sup total]': propiedad.surface_total,
-            '[sup útil]': propiedad.surface_useful,
-            '[nro dorms]': propiedad.bedrooms,
-            '[nro baños]': propiedad.bathrooms,
-            '[nro estacionamientos]': propiedad.parking_spots,
-            '[nro bodegas]': propiedad.storage_units,
+            'address': propiedad.address or 'No disponible',
             
-            # Usuario (Ejemplo)
-            '[nombre cliente]': request.user.get_full_name() or request.user.username,
+            # Formateamos el precio como moneda, o ponemos un texto por defecto
+            'price': f"${propiedad.price:,.0f}" if propiedad.price is not None else 'Consultar',
             
-            # NOTA: Los placeholders faltantes (ej. '[valor CAE]', '[plusvalía comuna]', etc.)
-            # no serán reemplazados porque no tenemos los datos en el modelo Property.
+            'surface_total': propiedad.surface_total or 'No disponible',
+            'surface_useful': propiedad.surface_useful or 'No disponible',
+            
+            # Usamos los nombres de campo correctos
+            'bedrooms': propiedad.bedrooms if propiedad.bedrooms is not None else 'No disponible',
+            'bathrooms': propiedad.bathrooms if propiedad.bathrooms is not None else 'No disponible',
+            'parking_spots': propiedad.parking_spots if propiedad.parking_spots is not None else 'No disponible',
+            'storage_units': propiedad.storage_units if propiedad.storage_units is not None else 'No disponible',
+            
+            'nombre_cliente': request.user.get_full_name() or request.user.username,
         }
-
-        # Lógica de reemplazo robusta para Párrafos
-        for p in document.paragraphs:
-            # Crea una lista de textos de 'runs' para reconstruir el párrafo
-            full_text = "".join(run.text for run in p.runs)
-            if any(key in full_text for key in context.keys()):
-                # Realiza los reemplazos en la cadena de texto completa
-                for key, value in context.items():
-                    full_text = full_text.replace(key, str(value or '')) # Usa '' si el valor es None
-                
-                # Borra todos los runs existentes y añade uno nuevo con el texto completo
-                for run in p.runs:
-                    run.text = ''
-                if p.runs:
-                    p.runs[0].text = full_text
-
-        # Lógica de reemplazo robusta para Tablas
-        for table in document.tables:
-            for row in table.rows:
-                for cell in row.cells:
-                    # Aplica la misma lógica que para los párrafos a cada celda
-                    full_text = "".join(run.text for run in cell.paragraphs[0].runs) if cell.paragraphs else ''
-                    if any(key in full_text for key in context.keys()):
-                        for key, value in context.items():
-                            full_text = full_text.replace(key, str(value or ''))
-                        
-                        cell.text = ''
-                        cell.add_paragraph(full_text)
+        
+        doc.render(context)
         
         file_stream = BytesIO()
-        document.save(file_stream)
+        doc.save(file_stream)
         file_stream.seek(0)
         
         response = HttpResponse(
@@ -96,5 +78,6 @@ def generate_property_report(request, property_pk=None):
     except FileNotFoundError:
         return HttpResponse(f"Error: No se encontró la plantilla de reporte.", status=500)
     except Exception as e:
-        print(f"Error generando reporte: {str(e)}")
+        # Añadimos un print del error para facilitar la depuración en el futuro
+        print(f"Error generando reporte: {e}")
         return HttpResponse(f"Error inesperado al generar el reporte.", status=500)

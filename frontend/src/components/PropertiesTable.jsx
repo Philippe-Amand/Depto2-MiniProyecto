@@ -114,7 +114,7 @@ function PropertiesTable({
           <Table stickyHeader>
             <TableHead>
               <TableRow>
-                <TableCell sx={{ fontWeight: 'bold' }}>Nombre</TableCell>
+                <TableCell sx={{ fontWeight: 'bold' }}>Título</TableCell>
                 <TableCell sx={{ fontWeight: 'bold' }}>Dirección</TableCell>
                 <TableCell sx={{ fontWeight: 'bold' }}>Precio</TableCell>
                 <TableCell sx={{ fontWeight: 'bold' }}>Detalles</TableCell>
