@@ -9,19 +9,19 @@ from rest_framework_simplejwt.authentication import JWTAuthentication
 import docx
 from docxtpl import DocxTemplate
 
-from .models import Property
-from .serializers import PropertySerializer
+from .models import Arriendo
+from .serializers import ArriendoSerializer
 
 
 
-class PropertyViewSet(viewsets.ReadOnlyModelViewSet):
-    queryset = Property.objects.all()
-    serializer_class = PropertySerializer
+class ArriendoViewSet(viewsets.ReadOnlyModelViewSet):
+    queryset = Arriendo.objects.all()
+    serializer_class = ArriendoSerializer
     permission_classes = [AllowAny]
     pagination_class = StandardResultsSetPagination
     
-    ordering_fields = ['id'] 
-    ordering = ['id']        
+    ordering_fields = ['idArriendo'] 
+    ordering = ['idArriendo']        
 
 
 @api_view(['GET'])
@@ -29,36 +29,41 @@ class PropertyViewSet(viewsets.ReadOnlyModelViewSet):
 @permission_classes([IsAuthenticated])
 def generate_property_report(request, property_pk=None):
     """
-    Genera y devuelve un informe .docx para una propiedad específica,
-    utilizando los campos limpios del modelo Property refactorizado.
+    Genera y devuelve un informe .docx para una propiedad específica (Arriendo).
     """
     try:
-        propiedad = Property.objects.get(pk=property_pk)
-    except Property.DoesNotExist:
+        propiedad = Arriendo.objects.get(pk=property_pk)
+    except Arriendo.DoesNotExist:
         return HttpResponse("Error: Propiedad no encontrada.", status=404)
 
     try:
+        # Usamos el template original solicitado por el usuario
         template_path = settings.BASE_DIR.parent / 'templates/reports/informe_propiedad.docx'
         doc = DocxTemplate(template_path)
-        
-        # --- CORRECCIÓN CLAVE: Usamos los nombres de campo del modelo limpio ---
-        # También formateamos los datos y manejamos los casos nulos.
+
+        # Mapeo de campos del modelo Arriendo a las variables del template
+        # NOTA: Las variables en el Word deben ser snake_case (sin espacios)
         context = {
-            'address': propiedad.address or 'No disponible',
-            
-            # Formateamos el precio como moneda, o ponemos un texto por defecto
-            'price': f"${propiedad.price:,.0f}" if propiedad.price is not None else 'Consultar',
-            
-            'surface_total': propiedad.surface_total or 'No disponible',
-            'surface_useful': propiedad.surface_useful or 'No disponible',
-            
-            # Usamos los nombres de campo correctos
-            'bedrooms': propiedad.bedrooms if propiedad.bedrooms is not None else 'No disponible',
-            'bathrooms': propiedad.bathrooms if propiedad.bathrooms is not None else 'No disponible',
-            'parking_spots': propiedad.parking_spots if propiedad.parking_spots is not None else 'No disponible',
-            'storage_units': propiedad.storage_units if propiedad.storage_units is not None else 'No disponible',
-            
+            # Encabezado
+            'address': propiedad.direccion or 'No disponible',
+            'id': propiedad.idArriendo,
+            'comuna_id': 'Arica', # Dato simulado o extraer de dirección
+            'region_comuna_id': 'Arica y Parinacota', # Dato simulado
+            'fecha': propiedad.fechaDescarga.strftime("%d/%m/%Y") if propiedad.fechaDescarga else 'N/A',
             'nombre_cliente': request.user.get_full_name() or request.user.username,
+
+            # Tabla de detalles
+            'direccion': propiedad.direccion or 'No disponible',
+            'nro_depto': 'N/A', # No tenemos este campo específico
+            'comuna': 'Arica',
+            'region': 'Arica y Parinacota',
+            'precio_en_uf': f"${propiedad.precio:,.0f}" if propiedad.precio is not None else 'Consultar', # Mostramos precio en pesos por ahora
+            'tipo_propiedad': 'Departamento',
+            'nueva_usada': 'Usada',
+            'tipo_entrega': 'Inmediata',
+            'sup_total': propiedad.superficieTotal or '0',
+            'tipologia': f"{propiedad.habitaciones} Dorm / {propiedad.banos} Baños",
+            'nro_estacionamientos_bodegas': f"{propiedad.estacionamientos or 0} / {propiedad.bodegas or 0}",
         }
         
         doc.render(context)
@@ -71,13 +76,12 @@ def generate_property_report(request, property_pk=None):
             file_stream.read(),
             content_type='application/vnd.openxmlformats-officedocument.wordprocessingml.document'
         )
-        response['Content-Disposition'] = f'attachment; filename="informe_{propiedad.id}.docx"'
+        response['Content-Disposition'] = f'attachment; filename="informe_{propiedad.idArriendo}.docx"'
         
         return response
 
     except FileNotFoundError:
         return HttpResponse(f"Error: No se encontró la plantilla de reporte.", status=500)
     except Exception as e:
-        # Añadimos un print del error para facilitar la depuración en el futuro
         print(f"Error generando reporte: {e}")
         return HttpResponse(f"Error inesperado al generar el reporte.", status=500)

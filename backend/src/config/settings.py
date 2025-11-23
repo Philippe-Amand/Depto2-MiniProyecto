@@ -58,7 +58,7 @@ INSTALLED_APPS = [
     # Nuestras Apps
     'properties',
     'users',
-    'payments',
+    # 'payments',
 ]
 
 MIDDLEWARE = [

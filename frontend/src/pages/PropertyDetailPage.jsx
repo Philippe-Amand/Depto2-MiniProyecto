@@ -73,7 +73,7 @@ function PropertyDetailPage() {
         const url = window.URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        const fileName = property?.title ? property.title.replace(/ /g, '_') : propertyId;
+        const fileName = property?.titulo ? property.titulo.replace(/ /g, '_') : propertyId;
         a.download = `informe_propiedad_${fileName}.docx`;
         document.body.appendChild(a);
         a.click();
@@ -93,22 +93,22 @@ function PropertyDetailPage() {
     <Container sx={{ py: 4 }}>
       
       <Paper sx={{ p: 3, mb: 4 }}>
-        <Typography variant="h4" component="h1" gutterBottom>{property.title}</Typography>
-        <Typography variant="h6" color="text.secondary" gutterBottom>{property.address}</Typography>
+        <Typography variant="h4" component="h1" gutterBottom>{property.titulo}</Typography>
+        <Typography variant="h6" color="text.secondary" gutterBottom>{property.direccion}</Typography>
         
         <Typography variant="h3" sx={{ my: 2 }}>
-          {property.price != null ? `$${property.price.toLocaleString('es-CL')}` : 'Precio a consultar'}
+          {property.precio != null ? `$${property.precio.toLocaleString('es-CL')}` : 'Precio a consultar'}
         </Typography>
 
         {/* --- NUEVA SECCIÓN DE DETALLES --- */}
         <Grid container spacing={1} sx={{ my: 3 }}>
             {/* Asegúrate de que estos nombres coinciden con tu console.log */}
-            <DataDisplay label="Dormitorios" value={property.bedrooms} />
-            <DataDisplay label="Baños" value={property.bathrooms} />
-            <DataDisplay label="Estacionamientos" value={property.parking_spots} />
-            <DataDisplay label="Bodegas" value={property.storage_units} />
-            <DataDisplay label="Superficie Total" value={property.surface_total} unit=" m²" />
-            <DataDisplay label="Superficie Útil" value={property.surface_useful} unit=" m²" />
+            <DataDisplay label="Dormitorios" value={property.habitaciones} />
+            <DataDisplay label="Baños" value={property.banos} />
+            <DataDisplay label="Estacionamientos" value={property.estacionamientos} />
+            <DataDisplay label="Bodegas" value={property.bodegas} />
+            <DataDisplay label="Superficie Total" value={property.superficieTotal} unit=" m²" />
+            <DataDisplay label="Superficie Útil" value={property.superficieUtil} unit=" m²" />
         </Grid>
 
         <Button 
@@ -128,8 +128,8 @@ function PropertyDetailPage() {
         <Grid item xs={12} md={6}>
           <Typography variant="h5" component="h2" gutterBottom>Video</Typography>
           <Paper sx={{ p: 2, aspectRatio: '16 / 9', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            {isClient && property.youtube_video_url ? (
-              <ReactPlayer url={property.youtube_video_url} width="100%" height="100%" controls={true} />
+            {isClient && property.url ? (
+              <ReactPlayer url={property.url} width="100%" height="100%" controls={true} />
             ) : (
               <Typography color="text.secondary">(No hay video disponible)</Typography>
             )}

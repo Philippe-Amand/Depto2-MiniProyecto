@@ -15,15 +15,15 @@ let DefaultIcon = L.icon({
 L.Marker.prototype.options.icon = DefaultIcon;
 
 function MapComponent({ properties }) {
-  // --- CORRECCIÓN #1: Usa los nombres de campo finales del modelo: 'latitude' y 'longitude' ---
-  const geoProperties = properties.filter(p => p.latitude != null && p.longitude != null);
+  // --- CORRECCIÓN #1: Usa los nombres de campo finales del modelo: 'latitud' y 'longitud' ---
+  const geoProperties = properties.filter(p => p.latitud != null && p.longitud != null);
 
   if (geoProperties.length === 0) {
     return <p>No hay propiedades con geolocalización para mostrar en el mapa.</p>;
   }
 
   // --- CORRECCIÓN #2: Usa los campos correctos para la posición inicial ---
-  const initialPosition = [geoProperties[0].latitude, geoProperties[0].longitude];
+  const initialPosition = [geoProperties[0].latitud, geoProperties[0].longitud];
 
   return (
     <MapContainer 
@@ -37,11 +37,11 @@ function MapComponent({ properties }) {
       />
       {geoProperties.map(property => (
         // --- CORRECCIÓN #3: Usa los campos correctos para la posición de cada marcador ---
-        <Marker key={property.id} position={[property.latitude, property.longitude]}>
+        <Marker key={property.idArriendo} position={[property.latitud, property.longitud]}>
           <Popup>
-            <b>{property.title}</b><br />
-            {property.address}<br />
-            {property.price ? `Precio: $${Number(property.price).toLocaleString('es-CL')}` : 'Precio: Consultar'}
+            <b>{property.titulo}</b><br />
+            {property.direccion}<br />
+            {property.precio ? `Precio: $${Number(property.precio).toLocaleString('es-CL')}` : 'Precio: Consultar'}
           </Popup>
         </Marker>
       ))}
