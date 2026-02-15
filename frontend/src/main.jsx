@@ -6,11 +6,9 @@ import { AuthProvider } from './context/AuthContext'; // <-- IMPORTAR
 // ... (imports de la fuente) ...
 
 ReactDOM.createRoot(document.getElementById('root')).render(
-  <React.StrictMode>
     <BrowserRouter>
       <AuthProvider> {/* <-- ENVOLVER LA APP */}
         <App />
       </AuthProvider>
     </BrowserRouter>
-  </React.StrictMode>,
 );

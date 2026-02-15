@@ -114,7 +114,7 @@ function PropertiesTable({
           <Table stickyHeader>
             <TableHead>
               <TableRow>
-                <TableCell sx={{ fontWeight: 'bold' }}>Nombre</TableCell>
+                <TableCell sx={{ fontWeight: 'bold' }}>Título</TableCell>
                 <TableCell sx={{ fontWeight: 'bold' }}>Dirección</TableCell>
                 <TableCell sx={{ fontWeight: 'bold' }}>Precio</TableCell>
                 <TableCell sx={{ fontWeight: 'bold' }}>Detalles</TableCell>
@@ -123,14 +123,14 @@ function PropertiesTable({
             </TableHead>
             <TableBody>
               {paginatedProperties.map((property) => (
-                <TableRow hover key={property.id}>
-                  <TableCell>{property.name}</TableCell>
-                  <TableCell>{property.address}</TableCell>
-                  <TableCell>${Number(property.price).toLocaleString()}</TableCell>
+                <TableRow hover key={property.idArriendo}>
+                  <TableCell>{property.titulo}</TableCell>
+                  <TableCell>{property.direccion}</TableCell>
+                  <TableCell>${Number(property.precio).toLocaleString()}</TableCell>
                 {/* COLUMNA ACCIONES (CORREGIDA) */}
                   <TableCell>
                     <Tooltip title="Subir documento">
-                      <IconButton onClick={() => handleUploadClick(property.id)}>
+                      <IconButton onClick={() => handleUploadClick(property.idArriendo)}>
                         <FileUploadIcon />
                       </IconButton>
                     </Tooltip>
@@ -138,7 +138,7 @@ function PropertiesTable({
                         {/* La prop 'disabled' se evalúa como un booleano. */}
                         {/* Si el conteo es 0, property.document_count === 0 es true, y el botón se deshabilita. */}
                         <IconButton 
-                            onClick={() => handleListDocsClick(property.id)}
+                            onClick={() => handleListDocsClick(property.idArriendo)}
                             disabled={property.document_count === 0} 
                         >
                         <FileDownloadIcon />
@@ -149,7 +149,7 @@ function PropertiesTable({
                   {/* COLUMNA DETALLES (CORREGIDA) */}
                   <TableCell>
                     <Tooltip title="Detalles de la propiedad">
-                      <IconButton onClick={() => handleRowClick(property.id)}>
+                      <IconButton onClick={() => handleRowClick(property.idArriendo)}>
                         <HomeIcon />
                       </IconButton>
                     </Tooltip>

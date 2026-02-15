@@ -1,39 +1,88 @@
-from django.shortcuts import render
-
+from io import BytesIO
+from django.http import HttpResponse
+from django.conf import settings
 from rest_framework import viewsets
-from rest_framework.parsers import MultiPartParser, FormParser
+from rest_framework.pagination import PageNumberPagination as StandardResultsSetPagination
+from rest_framework.decorators import api_view, permission_classes, authentication_classes
 from rest_framework.permissions import AllowAny, IsAuthenticated
-from rest_framework_simplejwt.views import TokenObtainPairView
-from .serializers import MyTokenObtainPairSerializer
-from .models import Property, Document
-from .serializers import PropertySerializer, DocumentSerializer
+from rest_framework_simplejwt.authentication import JWTAuthentication
+import docx
+from docxtpl import DocxTemplate
 
-class PropertyViewSet(viewsets.ReadOnlyModelViewSet):
-    """
-    API endpoint que permite ver las propiedades.
-    """
-    # El conjunto de objetos que estarán disponibles en la API.
-    queryset = Property.objects.all().order_by('-created_at')
+from .models import Arriendo
+from .serializers import ArriendoSerializer
+
+
+
+class ArriendoViewSet(viewsets.ReadOnlyModelViewSet):
+    queryset = Arriendo.objects.all()
+    serializer_class = ArriendoSerializer
+    permission_classes = [AllowAny]
+    pagination_class = StandardResultsSetPagination
     
-    # La clase serializer que se usará para traducir los objetos.
-    serializer_class = PropertySerializer
-    permission_classes = [AllowAny] 
+    ordering_fields = ['idArriendo'] 
+    ordering = ['idArriendo']        
 
-class DocumentViewSet(viewsets.ModelViewSet):
-    queryset = Document.objects.all()
-    serializer_class = DocumentSerializer
-    parser_classes = (MultiPartParser, FormParser) # Permite la subida de archivos
-    permission_classes = [IsAuthenticated]
 
-    def perform_create(self, serializer):
-        # Asocia automáticamente el documento a la propiedad de la URL
-        serializer.save(property_id=self.kwargs['property_pk'])
+@api_view(['GET'])
+@authentication_classes([JWTAuthentication])
+@permission_classes([IsAuthenticated])
+def generate_property_report(request, property_pk=None):
+    """
+    Genera y devuelve un informe .docx para una propiedad específica (Arriendo).
+    """
+    try:
+        propiedad = Arriendo.objects.get(pk=property_pk)
+    except Arriendo.DoesNotExist:
+        return HttpResponse("Error: Propiedad no encontrada.", status=404)
+
+    try:
+        # Usamos el template original solicitado por el usuario
+        template_path = settings.BASE_DIR.parent / 'templates/reports/informe_propiedad.docx'
+        doc = DocxTemplate(template_path)
+
+        # Mapeo de campos del modelo Arriendo a las variables del template
+        # NOTA: Las variables en el Word deben ser snake_case (sin espacios)
+        context = {
+            # Encabezado
+            'address': propiedad.direccion or 'No disponible',
+            'id': propiedad.idArriendo,
+            'comuna_id': 'Arica', # Dato simulado o extraer de dirección
+            'region_comuna_id': 'Arica y Parinacota', # Dato simulado
+            'fecha': propiedad.fechaDescarga.strftime("%d/%m/%Y") if propiedad.fechaDescarga else 'N/A',
+            'nombre_cliente': request.user.get_full_name() or request.user.username,
+
+            # Tabla de detalles
+            'direccion': propiedad.direccion or 'No disponible',
+            'nro_depto': 'N/A', # No tenemos este campo específico
+            'comuna': 'Arica',
+            'region': 'Arica y Parinacota',
+            'precio_en_uf': f"${propiedad.precio:,.0f}" if propiedad.precio is not None else 'Consultar', # Mostramos precio en pesos por ahora
+            'tipo_propiedad': 'Departamento',
+            'nueva_usada': 'Usada',
+            'tipo_entrega': 'Inmediata',
+            'sup_total': propiedad.superficieTotal or '0',
+            'tipologia': propiedad.tipologia,
+            'tipología': propiedad.tipologia,
+            'nro_estacionamientos_bodegas': f"{propiedad.estacionamientos or 0} / {propiedad.bodegas or 0}",
+        }
         
-    def get_queryset(self):
-        # Filtra los documentos para mostrar solo los de la propiedad especificada en la URL
-        return Document.objects.filter(property_id=self.kwargs['property_pk'])
+        doc.render(context)
+        
+        file_stream = BytesIO()
+        doc.save(file_stream)
+        file_stream.seek(0)
+        
+        response = HttpResponse(
+            file_stream.read(),
+            content_type='application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+        )
+        response['Content-Disposition'] = f'attachment; filename="informe_{propiedad.idArriendo}.docx"'
+        
+        return response
 
-
-class MyTokenObtainPairView(TokenObtainPairView):
-    serializer_class = MyTokenObtainPairSerializer
-# Create your views here.
+    except FileNotFoundError:
+        return HttpResponse(f"Error: No se encontró la plantilla de reporte.", status=500)
+    except Exception as e:
+        print(f"Error generando reporte: {e}")
+        return HttpResponse(f"Error inesperado al generar el reporte.", status=500)

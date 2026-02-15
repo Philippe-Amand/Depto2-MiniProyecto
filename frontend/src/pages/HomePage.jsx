@@ -68,7 +68,7 @@ function HomePage() {
       {/* SECCIÓN #2: MAPA */}
       <Box>
         <Typography variant="h4" component="h2" gutterBottom>
-          Ubicación en el Mapa
+          Propiedades en el Mapa
         </Typography>
         <Paper sx={{ height: '500px', width: '100%' }}>
             {/* Pasamos solo las propiedades visibles de la página actual */}

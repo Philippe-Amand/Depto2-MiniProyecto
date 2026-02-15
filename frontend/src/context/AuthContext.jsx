@@ -1,61 +1,60 @@
-import { createContext, useState } from 'react';
-import { jwtDecode } from 'jwt-decode';
+// frontend/src/context/AuthContext.jsx
+import { createContext, useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { jwtDecode } from 'jwt-decode';
+import { API_BASE_URL } from '../apiConfig';
 
 const AuthContext = createContext();
-export default AuthContext;// <-- Hacemos esta la exportación por defecto
 
-// 2. Exporta el componente Provider como una exportación nombrada.
 export const AuthProvider = ({ children }) => {
   const [authTokens, setAuthTokens] = useState(() => 
     localStorage.getItem('authTokens') ? JSON.parse(localStorage.getItem('authTokens')) : null
   );
-  const [user, setUser] = useState(() => {
-  const tokens = localStorage.getItem('authTokens');
-  if (tokens) {
-    // Primero, parseamos el string JSON para convertirlo en un objeto JavaScript.
-    const parsedTokens = JSON.parse(tokens);
-    // Luego, pasamos SOLO el token de acceso a jwt_decode.
-     return jwtDecode(parsedTokens.access);
-  }
-  return null;
-  });
+  const [user, setUser] = useState(() => 
+    localStorage.getItem('authTokens') ? jwtDecode(JSON.parse(localStorage.getItem('authTokens')).access) : null
+  );
   const navigate = useNavigate();
 
   const loginUser = async (e) => {
     e.preventDefault();
-    const response = await fetch('http://127.0.0.1:8000/api/v1/token/', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ username: e.target.username.value, password: e.target.password.value }),
-    });
-    const data = await response.json();
+    try {
+      const response = await fetch(`${API_BASE_URL}/token/`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username: e.target.username.value, password: e.target.password.value }),
+      });
+      const data = await response.json();
+      if (!response.ok) throw data;
 
-    if (response.ok) {
       setAuthTokens(data);
       setUser(jwtDecode(data.access));
       localStorage.setItem('authTokens', JSON.stringify(data));
       navigate('/');
-    } else {
-      alert('¡Algo salió mal! Verifica tus credenciales.');
+    } catch (err) {
+      console.error('Error al iniciar sesión:', err);
+      alert('Error al iniciar sesión: Verifique usuario o contraseña.');
     }
+    
   };
-
+  
+  // FUNCIÓN CRÍTICA: Asegúrate de que esta función es correcta
   const logoutUser = () => {
-
     setAuthTokens(null);
     setUser(null);
     localStorage.removeItem('authTokens');
-    navigate('/login');
+    navigate('/login'); // <-- La redirección clave
   };
-  
+
   const contextData = {
-    user: user,
-    authTokens: authTokens,
-    loginUser: loginUser,
-    logoutUser: logoutUser,
+    user,
+    token: authTokens?.access,
+    loginUser,
+    logoutUser, // <-- Se exporta correctamente
   };
-  
+
+  useEffect(() => {
+    // ... (el useEffect no cambia)
+  }, [authTokens]);
 
   return (
     <AuthContext.Provider value={contextData}>
@@ -63,6 +62,8 @@ export const AuthProvider = ({ children }) => {
     </AuthContext.Provider>
   );
 };
+
+export default AuthContext;
 
 
 

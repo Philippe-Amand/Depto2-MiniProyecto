@@ -1,83 +1,117 @@
+# backend/src/properties/models.py
+
 from django.db import models
 
-class Property(models.Model):
-    """
-    Representa una propiedad inmobiliaria en el sistema.
-    """
-    name = models.CharField(
-        max_length=255,
-        verbose_name="Nombre de la Propiedad"
-    )
-    address = models.CharField(
-        max_length=255,
-        verbose_name="Dirección"
-    )
-    description = models.TextField(
-        verbose_name="Descripción",
-        help_text="Descripción detallada de la propiedad.",
-        null=True,  # Permite valores nulos en la BBDD
-        blank=True  # Permite que el campo esté en blanco en los formularios
-    )
-    price = models.DecimalField(
-        max_digits=10,
-        decimal_places=2,
-        verbose_name="Precio"
-    )
-    latitude = models.DecimalField(
-        max_digits=9,
-        decimal_places=6,
-        verbose_name="Latitud",
-        null=True,
-        blank=True
-    )
-    longitude = models.DecimalField(
-        max_digits=9,
-        decimal_places=6,
-        verbose_name="Longitud",
-        null=True,
-        blank=True
-    )
-    youtube_video_url = models.URLField(
-        max_length=255, 
-        null=True, 
-        blank=True, 
-        verbose_name="URL del Video de YouTube"
-    )
-    image = models.ImageField(
-        upload_to='properties/',
-        null=True,
-        blank=True,
-        verbose_name="Imagen de la Propiedad"
-    )
-    created_at = models.DateTimeField(
-        auto_now_add=True,
-        verbose_name="Fecha de Creación"
-    )
-    updated_at = models.DateTimeField(
-        auto_now=True,
-        verbose_name="Fecha de Actualización"
-    )
+class Arriendo(models.Model):
+    idArriendo = models.IntegerField(db_column='idArriendo', primary_key=True)
+    fechaDescarga = models.DateField(db_column='fechaDescarga', blank=True, null=True)
+    fechaCorrespondiente = models.DateField(db_column='fechaCorrespondiente', blank=True, null=True)
+    titulo = models.CharField(db_column='titulo', max_length=255, blank=True, null=True)
+    direccion = models.CharField(db_column='direccion', max_length=255, blank=True, null=True)
+    
+    # Foreign keys as Integers for now since referenced models don't exist in this file
+    idRegionComuna = models.IntegerField(db_column='idRegionComuna', blank=True, null=True)
+    idComuna = models.IntegerField(db_column='idComuna', blank=True, null=True)
+    
+    superficieTotal = models.CharField(db_column='superficieTotal', max_length=255, blank=True, null=True)
+    superficieUtil = models.CharField(db_column='superficieUtil', max_length=255, blank=True, null=True)
+    superficiePonderada = models.CharField(db_column='superficiePonderada', max_length=255, blank=True, null=True)
+    
+    antiguedad = models.IntegerField(db_column='antiguedad', blank=True, null=True)
+    dataAntiguedad = models.CharField(db_column='dataAntiguedad', max_length=15, blank=True, null=True)
+    amoblado = models.IntegerField(db_column='amoblado', blank=True, null=True)
+    precio = models.IntegerField(db_column='precio', blank=True, null=True)
+    moneda = models.CharField(db_column='moneda', max_length=2, blank=True, null=True)
+    uf_m2 = models.FloatField(db_column='uf_m2', blank=True, null=True)
+    habitaciones = models.IntegerField(db_column='habitaciones', blank=True, null=True)
+    banos = models.IntegerField(db_column='banos', blank=True, null=True)
+    estacionamientos = models.IntegerField(db_column='estacionamientos', blank=True, null=True)
+    bodegas = models.IntegerField(db_column='bodegas', blank=True, null=True)
+    url = models.CharField(db_column='url', max_length=255, blank=True, null=True)
+    latitud = models.FloatField(db_column='latitud', blank=True, null=True)
+    longitud = models.FloatField(db_column='longitud', blank=True, null=True)
+    uf_clp = models.FloatField(db_column='uf_clp', blank=True, null=True)
 
-class Meta:
-    verbose_name = "Propiedad"
-    verbose_name_plural = "Propiedades"
-    ordering = ['-created_at']
-
-def __str__(self):
-    return f"{self.name} - {self.address}"
-
-class Document(models.Model):
-    property = models.ForeignKey(
-        Property, 
-        related_name='documents', # Nos permite acceder a los documentos desde una propiedad
-        on_delete=models.CASCADE   # Si se borra la propiedad, se borran sus documentos
-    )
-    file = models.FileField(
-        upload_to='documents/',     # Se guardarán en 'media_root/documents/'
-        verbose_name="Documento"
-    )
-    uploaded_at = models.DateTimeField(auto_now_add=True)
+    class Meta:
+        managed = False
+        db_table = 'arriendos'
+        verbose_name = 'Arriendo'
+        verbose_name_plural = 'Arriendos'
 
     def __str__(self):
-        return f"Documento para {self.property.name} - {self.file.name}"
+        return f"{self.idArriendo} - {self.titulo}"
+
+    @property
+    def tipologia(self):
+        hab = self.habitaciones or 0
+        ba = self.banos or 0
+        return f"{hab}D & {ba}B"
+
+
+class Venta(models.Model):
+    idVenta = models.IntegerField(db_column='idVenta', primary_key=True)
+    fechaDescarga = models.DateField(db_column='fechaDescarga', blank=True, null=True)
+    fechaCorrespondiente = models.DateField(db_column='fechaCorrespondiente', blank=True, null=True)
+    titulo = models.CharField(db_column='titulo', max_length=255, blank=True, null=True)
+    direccion = models.CharField(db_column='direccion', max_length=255, blank=True, null=True)
     
+    idRegionComuna = models.IntegerField(db_column='idRegionComuna', blank=True, null=True)
+    idComuna = models.IntegerField(db_column='idComuna', blank=True, null=True)
+    
+    disponibilidad = models.CharField(db_column='disponibilidad', max_length=255, blank=True, null=True)
+    tipo = models.CharField(db_column='tipo', max_length=255, blank=True, null=True)
+    superficieTotal = models.CharField(db_column='superficieTotal', max_length=255, blank=True, null=True)
+    superficieUtil = models.CharField(db_column='superficieUtil', max_length=255, blank=True, null=True)
+    superficiePonderada = models.CharField(db_column='superficiePonderada', max_length=255, blank=True, null=True)
+    
+    antiguedad = models.IntegerField(db_column='antiguedad', blank=True, null=True)
+    dataAntiguedad = models.CharField(db_column='dataAntiguedad', max_length=15, blank=True, null=True)
+    amoblado = models.IntegerField(db_column='amoblado', blank=True, null=True)
+    precio = models.IntegerField(db_column='precio', blank=True, null=True)
+    moneda = models.CharField(db_column='moneda', max_length=2, blank=True, null=True)
+    uf_m2 = models.FloatField(db_column='uf_m2', blank=True, null=True)
+    habitaciones = models.IntegerField(db_column='habitaciones', blank=True, null=True)
+    banos = models.IntegerField(db_column='banos', blank=True, null=True)
+    estacionamientos = models.IntegerField(db_column='estacionamientos', blank=True, null=True)
+    bodegas = models.IntegerField(db_column='bodegas', blank=True, null=True)
+    url = models.CharField(db_column='url', max_length=255, blank=True, null=True)
+    latitud = models.FloatField(db_column='latitud', blank=True, null=True)
+    longitud = models.FloatField(db_column='longitud', blank=True, null=True)
+    uf_clp = models.FloatField(db_column='uf_clp', blank=True, null=True)
+
+    class Meta:
+        managed = False
+        db_table = 'ventas'
+        verbose_name = 'Venta'
+        verbose_name_plural = 'Ventas'
+
+    def __str__(self):
+        return f"{self.idVenta} - {self.titulo}"
+
+    @property
+    def tipologia(self):
+        hab = self.habitaciones or 0
+        ba = self.banos or 0
+        return f"{hab}D & {ba}B"
+
+
+class ArriendoVenta(models.Model):
+    idArriendoVenta = models.IntegerField(db_column='idArriendoVenta', primary_key=True)
+    
+    # Foreign Keys
+    arriendo = models.ForeignKey(Arriendo, models.DO_NOTHING, db_column='idArriendo', related_name='arriendos_ventas')
+    venta = models.ForeignKey(Venta, models.DO_NOTHING, db_column='idVenta', related_name='arriendos_ventas')
+    
+    distancia = models.IntegerField(db_column='distancia', blank=True, null=True)
+    precioTransformadoLineal = models.FloatField(db_column='precioTransformadoLineal', blank=True, null=True)
+    precioTransformadoPonderado = models.FloatField(db_column='precioTransformadoPonderado', blank=True, null=True)
+    inversoDistanciaFactor = models.FloatField(db_column='inversoDistanciaFactor', blank=True, null=True)
+
+    class Meta:
+        managed = False
+        db_table = 'arriendosventas'
+        verbose_name = 'Arriendo Venta'
+        verbose_name_plural = 'Arriendos Ventas'
+
+    def __str__(self):
+        return f"Relation {self.idArriendoVenta}: Arriendo {self.arriendo_id} - Venta {self.venta_id}"

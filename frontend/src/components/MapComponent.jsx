@@ -1,7 +1,6 @@
+// frontend/src/components/MapComponent.jsx
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
-import 'leaflet/dist/leaflet.css'; // ¡Importante! Importa el CSS de Leaflet.
-
-// Corrije el problema del ícono por defecto que no aparece en React Leaflet
+import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
 import icon from 'leaflet/dist/images/marker-icon.png';
 import iconShadow from 'leaflet/dist/images/marker-shadow.png';
@@ -15,19 +14,16 @@ let DefaultIcon = L.icon({
 
 L.Marker.prototype.options.icon = DefaultIcon;
 
-
-// El componente recibe la lista de propiedades como un "prop"
 function MapComponent({ properties }) {
-  // Filtramos para obtener solo propiedades con coordenadas válidas
-  const geoProperties = properties.filter(p => p.latitude && p.longitude);
+  // --- CORRECCIÓN #1: Usa los nombres de campo finales del modelo: 'latitud' y 'longitud' ---
+  const geoProperties = properties.filter(p => p.latitud != null && p.longitud != null);
 
-  // Si no hay propiedades para mostrar, no renderizamos el mapa.
   if (geoProperties.length === 0) {
     return <p>No hay propiedades con geolocalización para mostrar en el mapa.</p>;
   }
 
-  // Usamos la primera propiedad como centro inicial del mapa
-  const initialPosition = [geoProperties[0].latitude, geoProperties[0].longitude];
+  // --- CORRECCIÓN #2: Usa los campos correctos para la posición inicial ---
+  const initialPosition = [geoProperties[0].latitud, geoProperties[0].longitud];
 
   return (
     <MapContainer 
@@ -40,11 +36,12 @@ function MapComponent({ properties }) {
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
       />
       {geoProperties.map(property => (
-        <Marker key={property.id} position={[property.latitude, property.longitude]}>
+        // --- CORRECCIÓN #3: Usa los campos correctos para la posición de cada marcador ---
+        <Marker key={property.idArriendo} position={[property.latitud, property.longitud]}>
           <Popup>
-            <b>{property.name}</b><br />
-            {property.address}<br />
-            Precio: ${Number(property.price).toLocaleString()}
+            <b>{property.titulo}</b><br />
+            {property.direccion}<br />
+            {property.precio ? `Precio: $${Number(property.precio).toLocaleString('es-CL')}` : 'Precio: Consultar'}
           </Popup>
         </Marker>
       ))}
