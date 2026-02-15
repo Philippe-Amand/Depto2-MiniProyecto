@@ -62,7 +62,8 @@ def generate_property_report(request, property_pk=None):
             'nueva_usada': 'Usada',
             'tipo_entrega': 'Inmediata',
             'sup_total': propiedad.superficieTotal or '0',
-            'tipologia': f"{propiedad.habitaciones} Dorm / {propiedad.banos} Baños",
+            'tipologia': propiedad.tipologia,
+            'tipología': propiedad.tipologia,
             'nro_estacionamientos_bodegas': f"{propiedad.estacionamientos or 0} / {propiedad.bodegas or 0}",
         }
         

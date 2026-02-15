@@ -41,6 +41,12 @@ class Arriendo(models.Model):
     def __str__(self):
         return f"{self.idArriendo} - {self.titulo}"
 
+    @property
+    def tipologia(self):
+        hab = self.habitaciones or 0
+        ba = self.banos or 0
+        return f"{hab}D & {ba}B"
+
 
 class Venta(models.Model):
     idVenta = models.IntegerField(db_column='idVenta', primary_key=True)
@@ -81,6 +87,12 @@ class Venta(models.Model):
 
     def __str__(self):
         return f"{self.idVenta} - {self.titulo}"
+
+    @property
+    def tipologia(self):
+        hab = self.habitaciones or 0
+        ba = self.banos or 0
+        return f"{hab}D & {ba}B"
 
 
 class ArriendoVenta(models.Model):
